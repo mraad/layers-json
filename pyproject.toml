@@ -1,0 +1,70 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "layers-json"
+version = "0.4.2"
+description = "Publish ArcGIS metadata catalogs, knowledge bundles, and spatial database exports."
+license = "Apache-2.0"
+readme = "README.md"
+requires-python = ">=3.11"
+# Shared catalog code uses the standard library; readers/exporters use extras.
+dependencies = []
+
+[project.optional-dependencies]
+# APRX terminal exporter; ArcPy is supplied by ArcGIS Pro, not PyPI.
+duckdb = ["duckdb>=1.5.5", "pyarrow>=25.0.1", "rich>=15.0.0"]
+# layers_json/layers.py only. The stdlib-only promise above covers the CLI and the
+# toolboxes; a consumer that reads a written Layers.json back needs a parsed model,
+# and every such consumer had been re-declaring the same fields. `uvx layers-json`
+# still installs one wheel, because nothing the CLI imports touches pydantic.
+model = ["pydantic>=2.10"]
+# 3.5 is the floor for field domains (GetFieldDomain), which is where the
+# catalog's keyval comes from. An extra and never a dependency, because the wheel
+# must match the *system* GDAL — see the README, and GDAL_MISSING for what a user
+# sees when it is absent.
+fgdb = ["gdal>=3.6"]
+# The dev extra also needs pyarrow because tests/test_toolboxes.py executes
+# DuckDBToolbox.pyt, whose ARCGIS_TO_ARROW is a class body of live pa.* objects.
+# Its `import duckdb` is stubbed in tests/toolbox_support.py. No win32 pyarrow pin
+# nothing here installs into ArcGIS Pro's own conda env.
+# pyyaml is test-only too: the OKF author *writes* frontmatter with json.dumps
+# (JSON is a YAML subset), and tests/test_okf_from_aprx.py reads it back with a
+# real parser so the quoting is checked by something other than itself.
+# Self-references the `model` extra so tests/test_layers_model.py round-trips a
+# toolbox dump through layers_json.layers instead of skipping. The purity half of
+# that file blocks pydantic at the meta_path, so it still checks what it claims.
+dev = ["layers-json[model]", "ruff>=0.16", "pytest>=9", "pyarrow>=25", "pyyaml>=6"]
+
+[project.scripts]
+layers-duckdb = "layers_json.aprx_to_duckdb:main"
+layers-json = "layers_json.layers_from_aprx:main"
+# Same reading, written as an OKF v0.2 knowledge bundle instead of Layers.json.
+layers-okf = "layers_json.okf_from_aprx:main"
+# Off-Pro counterpart to Layers.pyt's HideUpdateTool; edits CIM JSON directly.
+layers-hide-update = "layers_json.hide_update_aprx:main"
+
+[tool.hatch.build.targets.wheel]
+# Carries layers_json/toolboxes/*.pyt too — hatchling ships every file under the
+# package dir, not just *.py.
+packages = ["layers_json"]
+
+[tool.ruff]
+line-length = 100
+# Lints (and would format) the .pyt files, which are Python despite the
+# extension. Replaces the `--extension pyt:python` flag the toolboxes needed
+# before they moved here; ruff auto-adds *.pyt to `include`.
+extension = { pyt = "python" }
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# ArcGIS dictates the toolbox hook names (getParameterInfo, updateMessages, ...).
+"layers_json/toolboxes/*.pyt" = ["N802"]
+
+[tool.ruff.format]
+# Avoid unrelated formatting churn in Pro UI adapters.
+exclude = ["layers_json/toolboxes/*.pyt"]

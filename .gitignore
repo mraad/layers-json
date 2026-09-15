@@ -1,0 +1,17 @@
+# ArcGIS writes a metadata sidecar beside every toolbox it opens. The .pyt
+# themselves are the product — never ignore those.
+layers_json/toolboxes/*.xml
+
+# scripts/fgdb_to_*.sh write a timestamped run log to $LOG_DIR (default ./logs)
+logs/
+
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+*.egg-info/
+.DS_Store
+.idea/
