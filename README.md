@@ -246,8 +246,7 @@ field updates, Arrow types, DuckDB transactions, and loader validation. GDAL and
 DuckDB integration tests need their optional dependencies. Pro adapter tests use
 ArcPy doubles; native UI, licensing, authenticated services, and project loading
 still require an ArcGIS Pro environment. See [smoke testing](docs/smoke-testing.md)
-for an end-to-end checklist and the [blog draft](docs/blog-post.md) for a capability
-walkthrough.
+for an end-to-end checklist.
 
 ### Shared Hide/Update rules
 
