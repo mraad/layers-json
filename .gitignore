@@ -15,3 +15,9 @@ build/
 *.egg-info/
 .DS_Store
 .idea/
+
+# Generated catalogs, their backups (Layers.json*.bak) and the atomic writer's
+# .Layers.*.tmp staging file — output, not source.
+Layers.json
+Layers.json*.bak
+.Layers.*.tmp
