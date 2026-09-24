@@ -402,6 +402,16 @@ you added by hand afterwards. Keep that DDL in a file you can replay.
   NULL and is counted on that layer's `[ok]` line — a non-zero
   `unparsed dates -> NULL` there means a format the parser does not know yet, not
   empty source data.
+- Rows whose geometry is empty are skipped and counted on the `[ok]` line
+  (`skipped N empty-geom`), so table counts can sit below `ogrinfo`'s `featureCount`.
+- The loaded data sits in the container's writable layer — `gvenzl/oracle-free`
+  declares no `VOLUME` — so `docker rm` destroys it. To keep a reusable snapshot,
+  stop cleanly and commit, and keep a host copy if the Docker VM can be reset:
+  ```bash
+  docker stop -t 300 oracle-spatial   # the 10 s default can SIGKILL a checkpoint
+  docker commit oracle-spatial my-oracle-loaded:latest
+  docker save my-oracle-loaded:latest | gzip -1 > my-oracle-loaded.tar.gz
+  ```
 - Verify a load:
   ```bash
   docker exec -i oracle-spatial \
