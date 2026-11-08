@@ -1,0 +1,1 @@
+- 2026-09-24: put the Oracle image backup in ~/docker-backups; user wanted it on an external drive (LaCie, then 990PRO from 2026-11-08). Rule: large backups/dumps go to /Volumes/990PRO, never LaCie or under ~ (esp. iCloud-synced ~/Documents).
